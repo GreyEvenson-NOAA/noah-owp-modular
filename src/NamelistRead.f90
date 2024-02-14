@@ -82,6 +82,7 @@ type, public :: namelist_type
   !-------------------------------!
   !   gridded dimensions, etc     !
   !-------------------------------!
+  character(len=256)  :: name_var_mask        ! name of NetCDF variable for model mask
   character(len=256)  :: name_dim_x           ! name of NetCDF 'x' dimension (longitude dimension)
   character(len=256)  :: name_dim_y           ! name of NetCDF 'y' dimension (latitude dimension)
   character(len=256)  :: name_dim_time        ! name of NetCDF 'time' dimension (latitude dimension)
@@ -380,6 +381,12 @@ contains
     this%stringMissing               = stringMissing 
 
     ! hardcode names for gridded dimensions, etc
+    this%name_var_vegtyp            = "vegtyp"     
+    this%name_var_isltyp            = "isltyp"  
+    this%name_var_soilcolor         = "soilcolor" 
+    this%name_var_slope             = "slope"   
+    this%name_var_azimuth           = "azimuth" 
+    this%name_var_mask              = "mask"   
     this%name_dim_x                 = "longitude"
     this%name_dim_y                 = "latitude" 
     this%name_dim_time              = "time"
