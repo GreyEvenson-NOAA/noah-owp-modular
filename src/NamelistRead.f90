@@ -63,6 +63,7 @@ type, public :: namelist_type
   character(len=256)  :: name_var_soilcolor   ! name of NetCDF variable for soilcolor
   character(len=256)  :: name_var_slope       ! name of NetCDF variable for slope
   character(len=256)  :: name_var_azimuth     ! name of NetCDF variable for azimuth
+  character(len=256)  :: name_var_mask        ! name of NetCDF variable for model mask
 
   !-------------------------------!
   !   gridded forcings            !
@@ -378,6 +379,14 @@ contains
     this%integerMissing              = integerMissing 
     this%realMissing                 = realMissing
     this%stringMissing               = stringMissing 
+
+
+    this%name_var_vegtyp            = "vegtyp"     
+    this%name_var_isltyp            = "isltyp"  
+    this%name_var_soilcolor         = "soilcolor" 
+    this%name_var_slope             = "slope"   
+    this%name_var_azimuth           = "azimuth" 
+    this%name_var_mask              = "mask"   
 
     ! hardcode names for gridded dimensions, etc
     this%name_dim_x                 = "longitude"
