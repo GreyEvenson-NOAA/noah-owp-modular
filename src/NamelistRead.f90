@@ -11,6 +11,7 @@ type, public :: namelist_type
   real               :: dt                 ! model timestep (s)
   character(len=12)  :: startdate          ! UTC start datetime of the model run ( YYYYMMDDHHmm )
   character(len=12)  :: enddate            ! UTC end datetime of the model run ( YYYYMMDDHHmm )
+  character(len=256) :: forcing_filename     ! directory/name of the input/forcing file
   character(len=256) :: output_filename    ! directory/name of the output file
   character(len=256) :: parameter_dir      ! name of the directory where parameter TBLs reside
   character(len=256) :: noahowp_table       ! name of noahowp parameter table
@@ -64,33 +65,10 @@ type, public :: namelist_type
   character(len=256)  :: name_var_slope       ! name of NetCDF variable for slope
   character(len=256)  :: name_var_azimuth     ! name of NetCDF variable for azimuth
   character(len=256)  :: name_var_mask        ! name of NetCDF variable for model mask
-
-  !-------------------------------!
-  !   gridded forcings            !
-  !-------------------------------!
-  character(len=256)  :: forcings_dir           ! name of directory containing forcings file(s)
-  character(len=256)  :: forcings_file_prefix   ! forcings file prefix 
-  character(len=256)  :: forcings_file_type     ! forcings file type -- 'HOURLY', 'DAILY', 'MONTHLY', or 'YEARLY'
-  character(len=256)  :: name_forcings_pcprate  ! name of precipitation rate (mm/s) variable in forcings file(s)
-  character(len=256)  :: name_forcings_sfctmp   ! name of surface temperature (K) variable in forcings file(s)
-  character(len=256)  :: name_forcings_sfcprs   ! name of surface pressure (pa) variable in forcings file(s)
-  character(len=256)  :: name_forcings_UU       ! name of wind speed in eastward dir (m/s) variable in forcings file(s)
-  character(len=256)  :: name_forcings_VV       ! name of wind speed in northward dir (m/s) variable in forcings file(s)
-  character(len=256)  :: name_forcings_swrad    ! name ofdownward shortwave radiation (w/m2) variable in forcings file(s) 
-  character(len=256)  :: name_forcings_lwrad    ! name ofdownward longwave radiation (w/m2) variable in forcings file(s)
-  character(len=256)  :: name_forcings_Q2       ! name of specific humidity (kg/kg) variable in forcings file(s)
-
-  !-------------------------------!
-  !   gridded dimensions, etc     !
-  !-------------------------------!
   character(len=256)  :: name_dim_x           ! name of NetCDF 'x' dimension (longitude dimension)
   character(len=256)  :: name_dim_y           ! name of NetCDF 'y' dimension (latitude dimension)
-  character(len=256)  :: name_dim_time        ! name of NetCDF 'time' dimension (latitude dimension)
   character(len=256)  :: name_var_x           ! name of NetCDF 'x' variable (longitude dimension)
   character(len=256)  :: name_var_y           ! name of NetCDF 'y' varaible (latitude dimension)
-  character(len=256)  :: name_var_time        ! name of NetCDF 'time' varaible (latitude dimension)
-  character(len=256)  :: name_att_dx          ! name of NetCDF 'x' dimension resolution (spacing)
-  character(len=256)  :: name_att_dy          ! name of NetCDF 'y' dimension resolution (spacing)
 
   ! define missing values against which namelist options can be checked
   integer            :: integerMissing
@@ -121,6 +99,7 @@ contains
     real               :: dt
     character(len=12)  :: startdate
     character(len=12)  :: enddate
+    character(len=256) :: forcing_filename
     character(len=256) :: output_filename
     character(len=256) :: parameter_dir
     character(len=256) :: soil_table
@@ -169,22 +148,15 @@ contains
     !--------------------!
     character(len=256)  :: attributes_filename  ! directory/name of NetCDF file holding gridded model attributes
 
-    !--------------------!
-    !   forcings         !
-    !--------------------!
-    character(len=256)  :: forcings_dir           ! directory/name of the input/forcing files
-    character(len=256)  :: forcings_file_prefix   ! 
-    character(len=256)  :: forcings_file_type
-
     ! ----- END OF VARIABLE DECLARATIONS -------
     
     !--------------------------- !
     !   define namelist groups   !
     !--------------------------- !
-    namelist / timing            / dt,startdate,enddate,output_filename
+    namelist / timing            / dt,startdate,enddate,forcing_filename,output_filename
     namelist / parameters        / parameter_dir, soil_table, general_table, noahowp_table,&
                                    soil_class_name, veg_class_name
-    namelist / forcing           / forcings_dir,forcings_file_type,forcings_file_prefix,ZREF,rain_snow_thresh
+    namelist / forcing           / ZREF,rain_snow_thresh
     namelist / model_options     / precip_phase_option,runoff_option,drainage_option,frozen_soil_option,&
                                    dynamic_vic_option,dynamic_veg_option,snow_albedo_option,&
                                    radiative_transfer_option,sfc_drag_coeff_option,canopy_stom_resist_option,&
@@ -211,6 +183,7 @@ contains
     dt               = realMissing
     startdate        = stringMissing
     enddate          = stringMissing
+    forcing_filename = stringMissing
     output_filename  = stringMissing
     parameter_dir    = stringMissing
     soil_table       = stringMissing
@@ -245,9 +218,6 @@ contains
     subsurface_option           = integerMissing
 
     attributes_filename  = stringMissing
-    forcings_dir         = stringMissing
-    forcings_file_prefix = stringMissing
-    forcings_file_type   = stringMissing
 
     !---------------------------------------------------------------------
     !  read namelist
@@ -329,6 +299,7 @@ contains
     if(dt               /= realMissing) then; this%dt = dt; else; write(*,'(A)') 'ERROR: required entry dt not found in namelist'; stop; end if 
     if(startdate        /= stringMissing) then; this%startdate = startdate; else; write(*,'(A)') 'ERROR: required entry startdate not found in namelist'; stop; end if
     if(enddate          /= stringMissing) then; this%enddate = enddate; else; write(*,'(A)') 'ERROR: required entry enddate not found in namelist'; stop; end if
+    if(forcing_filename /= stringMissing) then; this%forcing_filename = forcing_filename; else; write(*,'(A)') 'ERROR: required entry forcing_filename not found in namelist'; stop; end if
     if(output_filename  /= stringMissing) then; this%output_filename = output_filename; else; write(*,'(A)') 'ERROR: required entry output_filename not found in namelist'; stop; end if
     if(parameter_dir    /= stringMissing) then; this%parameter_dir = parameter_dir; else; write(*,'(A)') 'ERROR: required entry parameter_dir not found in namelist'; stop; end if
     if(soil_table       /= stringMissing) then; this%soil_table = soil_table; else; write(*,'(A)') 'ERROR: required entry soil_table  not found in namelist'; stop; end if
@@ -371,49 +342,23 @@ contains
     if(subsurface_option           /= integerMissing) then; this%subsurface_option = subsurface_option; else; write(*,'(A)') 'ERROR: required entry subsurface_option not found in namelist'; stop; end if
     
     if(attributes_filename         /= stringMissing) then; this%attributes_filename = attributes_filename; else; write(*,'(A)') 'ERROR: required entry attributes_filename not found in namelist'; stop; end if
-    if(forcings_dir                /= stringMissing) then; this%forcings_dir = forcings_dir; else; write(*,'(A)') 'ERROR: required entry forcings_dir not found in namelist'; stop; end if
-    if(forcings_file_prefix        /= stringMissing) then; this%forcings_file_prefix = forcings_file_prefix; else; write(*,'(A)') 'ERROR: required entry forcings_file_prefix not found in namelist'; stop; end if
-    if(forcings_file_type          /= stringMissing) then; this%forcings_file_type = forcings_file_type; else; write(*,'(A)') 'ERROR: required entry forcing_file_type not found in namelist'; stop; end if
 
     ! store missing values as well
     this%integerMissing              = integerMissing 
     this%realMissing                 = realMissing
     this%stringMissing               = stringMissing 
 
-
+    ! hardcode names for gridded attributes
     this%name_var_vegtyp            = "vegtyp"     
     this%name_var_isltyp            = "isltyp"  
     this%name_var_soilcolor         = "soilcolor" 
     this%name_var_slope             = "slope"   
     this%name_var_azimuth           = "azimuth" 
     this%name_var_mask              = "mask"   
-
-    ! hardcode names for gridded dimensions, etc
     this%name_dim_x                 = "longitude"
     this%name_dim_y                 = "latitude" 
-    this%name_dim_time              = "time"
     this%name_var_x                 = this%name_dim_x
     this%name_var_y                 = this%name_dim_y
-    this%name_var_time              = this%name_dim_time
-    this%name_att_dx                = "dx"     
-    this%name_att_dy                = "dy"
-
-    ! hardcode names for gridded attributes
-    this%name_var_vegtyp            = "vegtyp"     
-    this%name_var_isltyp            = "isltyp"  
-    this%name_var_soilcolor         = "soilcolor" 
-    this%name_var_slope             = "slope"   
-    this%name_var_azimuth           = "azimuth"   
-
-    ! hardcode names for gridded forcings
-    this%name_forcings_pcprate           = 'pcprate'
-    this%name_forcings_sfctmp            = 'sfctmp'
-    this%name_forcings_sfcprs            = 'sfcprs'
-    this%name_forcings_UU                = 'UU'
-    this%name_forcings_VV                = 'VV'
-    this%name_forcings_swrad             = 'swrad'
-    this%name_forcings_lwrad             = 'lwrad'
-    this%name_forcings_Q2                = 'Q2'
 
   end subroutine ReadNamelist
 

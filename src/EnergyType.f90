@@ -336,8 +336,7 @@ module EnergyType
   
       this%LH        = huge(1.0)    
       this%TGS       = huge(1.0)    
-      this%ICE       = huge(1)   
-      this%SNOWT_AVG = huge(1.0) 
+      this%ICE       = huge(1)    
       
       this%IMELT(:)  = huge(1)
       this%STC(:)    = huge(1.0)
@@ -385,7 +384,6 @@ module EnergyType
       integer,               intent(in)    :: ix
       integer,               intent(in)    :: iy
   
-      this%SNOWT_AVG = energygrid%SNOWT_AVG(ix,iy)
       this%TV = energygrid%TV(ix,iy)
       this%TG = energygrid%TG(ix,iy)
       this%FCEV = energygrid%FCEV(ix,iy)
@@ -527,7 +525,6 @@ module EnergyType
       integer,               intent(in)    :: ix
       integer,               intent(in)    :: iy
   
-      energygrid%SNOWT_AVG(ix,iy) = this%SNOWT_AVG
       energygrid%TV(ix,iy) = this%TV
       energygrid%TG(ix,iy) = this%TG
       energygrid%FCEV(ix,iy) = this%FCEV
